@@ -47,6 +47,11 @@ struct YAMLEditorView: UIViewRepresentable {
 }
 
 // MARK: – CodeMirror 6 HTML
+//
+// NOTE: For production builds, replace the CDN ESM imports below with locally
+// bundled copies.  Build a CodeMirror bundle (e.g. via esbuild/Rollup) and
+// place it in Sources/KiteApp/Resources/codemirror/cm6.bundle.js, then load
+// it with WKWebView.loadFileURL(_:allowingReadAccessTo:).
 
 private func editorHTML(initial: String, readOnly: Bool) -> String {
     let escaped = initial

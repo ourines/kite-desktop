@@ -24,11 +24,10 @@ final class WebSocketClient: NSObject, URLSessionWebSocketDelegate {
 
     // MARK: – Connect
 
-    func connect(to url: URL) {
+    func connect(to url: URL, clusterName: String? = nil) {
         disconnect()
         var request = URLRequest(url: url)
-        // Forward cluster header if needed
-        if let clusterName = Task.currentPriority == .userInitiated ? nil : nil {
+        if let clusterName {
             request.setValue(clusterName, forHTTPHeaderField: "x-cluster-name")
         }
         task = session.webSocketTask(with: request)

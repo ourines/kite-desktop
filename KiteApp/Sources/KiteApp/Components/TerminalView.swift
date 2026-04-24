@@ -49,7 +49,6 @@ struct TerminalView: UIViewRepresentable {
             wsTask?.resume()
             receive()
         }
-
         private func receive() {
             wsTask?.receive { [weak self] result in
                 guard let self else { return }
@@ -85,7 +84,12 @@ struct TerminalView: UIViewRepresentable {
     }
 }
 
-// MARK: – xterm.js HTML template (loads from CDN; replace with bundled version for production)
+// MARK: – xterm.js HTML template
+//
+// NOTE: For production builds, replace the CDN URLs below with locally bundled
+// copies placed in Sources/KiteApp/Resources/xterm/.
+// e.g. add xterm.js, xterm.css, and xterm-addon-fit.js to the Resources folder
+// and reference them via bundle URLs using WKWebView.loadFileURL(_:allowingReadAccessTo:).
 
 private let terminalHTML = """
 <!DOCTYPE html>

@@ -1,5 +1,40 @@
 import SwiftUI
 
+/// Bootstrap view: configures the API client from UserDefaults, then shows
+/// the server setup sheet if no URL is saved yet.
+struct AppEntryView: View {
+    @EnvironmentObject private var appState: AppState
+    @State private var isReady = false
+    @State private var showServerSetup = false
+
+    var body: some View {
+        Group {
+            if isReady {
+                RootView()
+            } else {
+                ProgressView("Connecting…")
+            }
+        }
+        .sheet(isPresented: $showServerSetup, onDismiss: {
+            // After setup, try again
+            Task { await configure() }
+        }) {
+            ServerSetupView()
+        }
+        .task { await configure() }
+    }
+
+    private func configure() async {
+        if let saved = UserDefaults.standard.string(forKey: "serverBaseURL"),
+           let url = URL(string: saved) {
+            await APIClient.shared.configure(baseURL: url)
+            isReady = true
+        } else {
+            showServerSetup = true
+        }
+    }
+}
+
 struct RootView: View {
     @EnvironmentObject private var appState: AppState
     @Environment(\.horizontalSizeClass) private var hSizeClass

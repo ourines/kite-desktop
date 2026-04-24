@@ -30,17 +30,24 @@ struct ServerConnection {
 
     /// Build a full URL for an API path like "/api/v1/pods/default"
     func url(path: String) throws -> URL {
-        guard let url = URL(string: "/api/v1" + path, relativeTo: baseURL) else {
+        guard
+            let components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false),
+            var urlComponents = URLComponents(string: components.string ?? baseURL.absoluteString)
+        else {
             throw APIError.invalidURL
         }
+        urlComponents.path = (urlComponents.path.hasSuffix("/") ? String(urlComponents.path.dropLast()) : urlComponents.path) + "/api/v1" + path
+        guard let url = urlComponents.url else { throw APIError.invalidURL }
         return url
     }
 
     /// Build a URL for non-versioned paths (e.g. /healthz)
     func rawURL(path: String) throws -> URL {
-        guard let url = URL(string: path, relativeTo: baseURL) else {
-            throw APIError.invalidURL
-        }
+        guard
+            var comps = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)
+        else { throw APIError.invalidURL }
+        comps.path = path
+        guard let url = comps.url else { throw APIError.invalidURL }
         return url
     }
 }
@@ -150,7 +157,9 @@ actor APIClient {
     func webSocketURL(path: String) throws -> URL {
         guard let conn = connection else { throw APIError.noClusterSelected }
         let httpURL = try conn.url(path: path)
-        var components = URLComponents(url: httpURL, resolvingAgainstBaseURL: true)!
+        guard var components = URLComponents(url: httpURL, resolvingAgainstBaseURL: true) else {
+            throw APIError.invalidURL
+        }
         components.scheme = components.scheme == "https" ? "wss" : "ws"
         guard let wsURL = components.url else { throw APIError.invalidURL }
         return wsURL

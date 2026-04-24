@@ -1,13 +1,17 @@
 import SwiftUI
+import SwiftData
 
 @main
 struct KiteApp: App {
-    @StateObject private var appState = AppState()
+    @StateObject private var appState   = AppState()
+    @StateObject private var favorites  = FavoritesStore()
 
     var body: some Scene {
         WindowGroup {
-            RootView()
+            AppEntryView()
                 .environmentObject(appState)
+                .environmentObject(favorites)
+                .modelContainer(ModelContainer.kite)
         }
 #if targetEnvironment(macCatalyst)
         .commands {

@@ -64,6 +64,14 @@ extension ModelContainer {
             SearchHistoryEntry.self,
         ])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-        return try! ModelContainer(for: schema, configurations: [config])
+        do {
+            return try ModelContainer(for: schema, configurations: [config])
+        } catch {
+            // Fall back to in-memory store so the app can still run if the on-disk
+            // store is corrupted.  In a production app you might want to present an
+            // error to the user or attempt migration first.
+            let fallback = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+            return try! ModelContainer(for: schema, configurations: [fallback]) // swiftlint:disable:this force_try
+        }
     }()
 }
